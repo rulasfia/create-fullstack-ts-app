@@ -3,13 +3,19 @@
   "version": "1.0.0",
   "description": "",
   "workspaces": [
-   "packages/*",
-   "apps/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "dev": "turbo run dev"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "turbo": "^1.4.6"
+  }
 }
