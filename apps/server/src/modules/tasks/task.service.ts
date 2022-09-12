@@ -1,5 +1,5 @@
-import db from "@/utils/prisma";
 import type { Task } from "@prisma/client";
+import db from "../../utils/prisma";
 
 export async function getAllTasks() {
   return await db.task.findMany();
