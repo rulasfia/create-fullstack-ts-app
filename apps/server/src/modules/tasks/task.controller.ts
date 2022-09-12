@@ -47,17 +47,18 @@ export async function updateTaskHandler(
   res: Response
 ) {
   const { id } = req.params;
-  const { name, description, doneAt } = req.body;
+  const body = req.body;
 
   const currentTask = await getTaskById(id);
   if (!currentTask) {
     return res.status(404).json({ message: "Task not found" });
   }
 
+  console.log({ body });
   const updatedTask = await updateTask(id, {
-    name: name ?? currentTask.name,
-    description: description ?? currentTask.description,
-    doneAt: doneAt ?? currentTask.doneAt,
+    name: body?.name ?? currentTask.name,
+    description: body?.description ?? currentTask.description,
+    doneAt: body?.doneAt !== undefined ? body?.doneAt : currentTask.doneAt,
   });
 
   return res.status(200).json(updatedTask);
