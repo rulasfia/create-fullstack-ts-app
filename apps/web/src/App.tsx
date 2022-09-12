@@ -1,4 +1,4 @@
-import { Task } from "@rulasfia/api-types";
+import { Task } from "@rulasfia/server/dto";
 import { useEffect, useState } from "react";
 import "./App.css";
 import reactLogo from "./assets/react.svg";
