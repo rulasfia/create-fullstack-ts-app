@@ -23,7 +23,7 @@ function runCommand(command) {
 // clone the repo
 const gitCloneCommand = (dir) => `git clone --depth 1 ${templateRepo} ${dir}`;
 // install dependencies
-const installDepsCommand = (dir) => `cd ${dir} && yarn install`;
+const installDepsCommand = (dir) => `cd ${dir} && npm install`;
 // remove bin file & git history
 const cleanupCommand = (dir) => `cd ${dir} && rm -rf ./bin && rm -rf .git`;
 // initialize git
