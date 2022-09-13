@@ -1,58 +1,44 @@
 #!/usr/bin/env node
 
-const { execSync } = require("child_process");
+const script = require('./scripts.js')
+const runCommand = require('./runner.js').runCommand;
+const cleanUpOnFail = require('./cleanup.js').cleanUpOnFail;
+
 const readline = require("readline").createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
-const templateRepo = "https://github.com/rulasfia/create-fullstack-ts-app";
-
-// Run the command
-function runCommand(command) {
-  try {
-    execSync(command, { stdio: "inherit" });
-  } catch (e) {
-    console.error(`Failed to execute ${command}`);
-    return false;
-  }
-
-  return true;
-}
-
-// clone the repo
-const gitCloneCommand = (dir) => `git clone --depth 1 ${templateRepo} ${dir}`;
-// install dependencies
-const installDepsCommand = (dir) => `cd ${dir} && npm install`;
-// remove bin file & git history
-const cleanupCommand = (dir) => `cd ${dir} && rm -rf ./bin && rm -rf .git`;
-// initialize git
-const initGitCommand = (dir) => `cd ${dir} && git init`;
-
 // Initialize the project
 function initializeProject(dir) {
   console.log(`Initializing fullstack typescript monorepo in ${dir}`);
-  const checkedOut = runCommand(gitCloneCommand(dir));
+  const checkedOut = runCommand(script.gitCloneCommand(dir));
   if (!checkedOut) {
-    process.exit(1);
+    cleanUpOnFail(dir)
   }
 
   console.log("Installing dependencies...");
-  const depsInstalled = runCommand(installDepsCommand(dir));
+  const depsInstalled = runCommand(script.installDepsCommand(dir));
   if (!depsInstalled) {
-    process.exit(1);
+    cleanUpOnFail(dir)
   }
 
   console.log("Cleaning up...");
-  const cleanedUp = runCommand(cleanupCommand(dir));
+  const cleanedUp = runCommand(script.cleanupCommand(dir));
   if (!cleanedUp) {
-    process.exit(1);
+    cleanUpOnFail(dir)
   }
 
   console.log("Initializing git...");
-  const gitInitialized = runCommand(initGitCommand(dir));
+  const gitInitialized = runCommand(script.initGitCommand(dir));
   if (!gitInitialized) {
-    process.exit(1);
+    cleanUpOnFail(dir)
+  }
+
+  console.log("Running post-install script...");
+  const postInstallScriptFinished = runCommand(script.postInstallCommnad(dir))
+  if (!postInstallScriptFinished) {
+    cleanUpOnFail(dir)
   }
 
   console.log(`\n🎉 Your project is ready!`);

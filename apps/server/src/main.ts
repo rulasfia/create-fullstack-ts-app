@@ -7,7 +7,7 @@ import db from "./utils/prisma";
 
 /** load env variable */
 dotenv.config();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 4000;
 
 /** initiate express app */
 const app = express();
