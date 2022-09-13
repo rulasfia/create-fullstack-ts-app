@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 
 const { execSync } = require("child_process");
+const readline = require("readline").createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+const templateRepo = "https://github.com/rulasfia/create-fullstack-ts-app";
 
 // Run the command
 function runCommand(command) {
@@ -14,6 +20,48 @@ function runCommand(command) {
   return true;
 }
 
+// clone the repo
+const gitCloneCommand = (dir) => `git clone --depth 1 ${templateRepo} ${dir}`;
+// install dependencies
+const installDepsCommand = (dir) => `cd ${dir} && yarn install`;
+// remove bin file & git history
+const cleanupCommand = (dir) => `cd ${dir} && rm -rf ./bin && rm -rf .git`;
+// initialize git
+const initGitCommand = (dir) => `cd ${dir} && git init`;
+
+// Initialize the project
+function initializeProject(dir) {
+  console.log(`Initializing fullstack typescript monorepo in ${dir}`);
+  const checkedOut = runCommand(gitCloneCommand(dir));
+  if (!checkedOut) {
+    process.exit(1);
+  }
+
+  console.log("Installing dependencies...");
+  const depsInstalled = runCommand(installDepsCommand(dir));
+  if (!depsInstalled) {
+    process.exit(1);
+  }
+
+  console.log("Cleaning up...");
+  const cleanedUp = runCommand(cleanupCommand(dir));
+  if (!cleanedUp) {
+    process.exit(1);
+  }
+
+  console.log("Initializing git...");
+  const gitInitialized = runCommand(initGitCommand(dir));
+  if (!gitInitialized) {
+    process.exit(1);
+  }
+
+  console.log(`\n🎉 Your project is ready!`);
+  console.log(`➡️ 'cd ${dir}' to get started`);
+
+  return;
+}
+
+/** ============================================================= */
 const repoName = process.argv[2];
 
 if (!repoName) {
@@ -21,38 +69,15 @@ if (!repoName) {
   process.exit(1);
 }
 
-// clone the repo
-const gitCheckoutCommand = `git clone --depth 1 https://github.com/jsjoeio/create-express-ts ${repoName}`;
-// install dependencies
-const installDepsCommand = `cd ${repoName} && yarn install`;
-// remove bin file & git history
-const cleanupCommand = `cd ${repoName} && rm -rf ./bin && rm -rf .git`;
-// initialize git
-const initGitCommand = `cd ${repoName} && git init`;
+console.log(`This will initialize the project in ${repoName} directory.`);
 
-console.log(`Initializing fullstack typescript monorepo in ${repoName}`);
-const checkedOut = runCommand(gitCheckoutCommand);
-if (!checkedOut) {
-  process.exit(1);
-}
+readline.question(`\n Are you sure you want to continue? (y/n) `, (answer) => {
+  if (answer === "y") {
+    initializeProject(repoName);
+  } else {
+    console.log("Aborting...");
+    process.exit(1);
+  }
 
-console.log("Installing dependencies...");
-const depsInstalled = runCommand(installDepsCommand);
-if (!depsInstalled) {
-  process.exit(1);
-}
-
-console.log("Cleaning up...");
-const cleanedUp = runCommand(cleanupCommand);
-if (!cleanedUp) {
-  process.exit(1);
-}
-
-console.log("Initializing git...");
-const gitInitialized = runCommand(initGitCommand);
-if (!gitInitialized) {
-  process.exit(1);
-}
-
-console.log(`\n🎉 Your project is ready!`);
-console.log(`➡️ 'cd ${repoName}' to get started`);
+  readline.close();
+});
