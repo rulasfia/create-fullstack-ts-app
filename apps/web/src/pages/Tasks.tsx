@@ -1,67 +1,24 @@
 import type { Task } from "@rulasfia/server/dto";
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const API_URL = "http://localhost:4000/api";
 
-export default function Tasks() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [tasks, setTasks] = useState<Task[]>([]);
+type TaskItemProps = {
+  children: string;
+  task: Task;
+  loadTask: () => void;
+};
 
-  /** function for load data from the server */
-  const loadTask = useCallback(async () => {
-    const response = await fetch(`${API_URL}/tasks`);
-    const data = await response.json();
-
-    setTasks(data);
-  }, []);
-
-  useEffect(() => {
-    setIsLoading(true);
-    loadTask().then(() => setIsLoading(false));
-  }, []);
-
-  /** function for handle create task */
-  async function submitHandler(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const target = e.target as typeof e.target & {
-      name: { value: string };
-      description: { value: string };
-    };
-
-    const name = target.name.value;
-    const description = target.description.value;
-    setIsSubmitting(true);
-
-    await fetch(API_URL + "/tasks", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, description }),
-    })
-      .then((res) => res.json())
-      .then((data) => setTasks((cv) => [...cv, data]))
-      .then(() => {
-        setIsSubmitting(false);
-        target.name.value = "";
-        target.description.value = "";
-      })
-      .catch((e) => console.error(e));
-  }
+function TaskItem({ children, task, loadTask }: TaskItemProps) {
+  const { doneAt, id } = task;
 
   /** function for handle delete task */
   async function deleteHandler(id: string) {
-    setIsDeleting(true);
     await fetch(API_URL + "/tasks/" + id, {
       method: "DELETE",
     })
       .then((res) => res.json())
-      .then(() => {
-        setTasks((cv) => cv.filter((task) => task.id !== id));
-        setIsDeleting(false);
-      })
+      .then(() => loadTask())
       .catch((e) => console.error(e));
   }
 
@@ -94,6 +51,79 @@ export default function Tasks() {
   }
 
   return (
+    <li style={{ marginBottom: "8px" }}>
+      <button
+        onClick={() =>
+          doneAt ? undoMarkAsDoneHandler(id) : markAsDoneHandler(id)
+        }
+      >
+        {doneAt ? "undo" : "mark as done"}
+      </button>{" "}
+      <button className="danger" onClick={() => deleteHandler(id)}>
+        remove
+      </button>{" "}
+      <span
+        style={{
+          textDecorationLine: doneAt ? "line-through" : "none",
+        }}
+      >
+        {children}
+      </span>
+    </li>
+  );
+}
+
+export default function Tasks() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  /** function for load data from the server */
+  const loadTask = useCallback(async () => {
+    const res = await fetch(`${API_URL}/tasks`);
+    const data = await res.json();
+
+    setTasks(data);
+  }, []);
+
+  useEffect(() => {
+    /** load task data on component mount */
+    /** this is just an example, not a recommended way in production app */
+    setIsLoading(true);
+    loadTask().then(() => setIsLoading(false));
+  }, []);
+
+  /** function for handle create task */
+  async function submitHandler(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const target = e.target as typeof e.target & {
+      name: { value: string };
+      description: { value: string };
+    };
+
+    /** read data from the <form> */
+    const name = target.name.value;
+    const description = target.description.value;
+
+    setIsSubmitting(true);
+    await fetch(API_URL + "/tasks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, description }),
+    })
+      .then((res) => res.json())
+      .then(() => loadTask())
+      .then(() => {
+        setIsSubmitting(false);
+        target.name.value = "";
+        target.description.value = "";
+      })
+      .catch((e) => console.error(e));
+  }
+
+  return (
     <div>
       <h1>Tasks</h1>
       <br />
@@ -107,8 +137,7 @@ export default function Tasks() {
         </button>
       </form>
       <br />
-      <p style={{ opacity: isDeleting ? 100 : 0 }}>Deleting...</p>
-      <main>
+      <main style={{ width: "480px" }}>
         {isLoading && "Loading..."}
         {!isLoading && (
           <ul
@@ -118,20 +147,10 @@ export default function Tasks() {
               alignItems: "start",
             }}
           >
-            {tasks.map(({ id, name, doneAt }) => (
-              <li key={id} style={{ marginBottom: "8px" }}>
-                <button
-                  onClick={() =>
-                    doneAt ? undoMarkAsDoneHandler(id) : markAsDoneHandler(id)
-                  }
-                >
-                  {doneAt ? "undo" : "mark as done"}
-                </button>{" "}
-                <button className="danger" onClick={() => deleteHandler(id)}>
-                  remove
-                </button>{" "}
-                {name}
-              </li>
+            {tasks.map((task) => (
+              <TaskItem key={task.id} task={task} loadTask={loadTask}>
+                {task.name}
+              </TaskItem>
             ))}
           </ul>
         )}
