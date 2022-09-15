@@ -35,7 +35,7 @@ const initGitCommand = (dir) => `cd ${dir} && git init`;
  * @param {string} dir - project directory
  */
 const postInstallCommnad = (dir) =>
-  `cd ${dir}/apps/server/prisma && npx shx touch database.db && cd .. && npx prisma migrate dev --name init && npx prisma generate`;
+  `cd ${dir}/apps/server && npx prisma migrate dev --name init && npx prisma generate`;
 
 module.exports = {
   gitCloneCommand,
