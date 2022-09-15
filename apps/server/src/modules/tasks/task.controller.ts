@@ -1,5 +1,10 @@
-import type { Task } from "@prisma/client";
 import type { Request, Response } from "express";
+import type {
+  CreateTaskInput,
+  DeleteTaskInput,
+  GetTaskInput,
+  UpdateTaskInput,
+} from "./task.schema";
 import {
   createTask,
   deleteTask,
@@ -14,7 +19,7 @@ export async function getAllTasksHandler(_req: Request, res: Response) {
 }
 
 export async function getTaskDetailHandler(
-  req: Request<{ id: string }>,
+  req: Request<GetTaskInput["params"]>,
   res: Response
 ) {
   const { id } = req.params;
@@ -28,7 +33,7 @@ export async function getTaskDetailHandler(
 }
 
 export async function createTaskHandler(
-  req: Request<{}, {}, Pick<Task, "name" | "description">>,
+  req: Request<{}, {}, CreateTaskInput["body"]>,
   res: Response
 ) {
   const { name, description } = req.body;
@@ -39,11 +44,7 @@ export async function createTaskHandler(
 }
 
 export async function updateTaskHandler(
-  req: Request<
-    { id: string },
-    {},
-    Partial<Pick<Task, "name" | "description" | "doneAt">>
-  >,
+  req: Request<UpdateTaskInput["params"], {}, UpdateTaskInput["body"]>,
   res: Response
 ) {
   const { id } = req.params;
@@ -54,18 +55,20 @@ export async function updateTaskHandler(
     return res.status(404).json({ message: "Task not found" });
   }
 
-  console.log({ body });
+  // convert string to date
+  const doneAt = body.doneAt ? new Date(body.doneAt) : null;
+
   const updatedTask = await updateTask(id, {
     name: body?.name ?? currentTask.name,
     description: body?.description ?? currentTask.description,
-    doneAt: body?.doneAt !== undefined ? body?.doneAt : currentTask.doneAt,
+    doneAt: body.doneAt !== undefined ? doneAt : currentTask.doneAt,
   });
 
   return res.status(200).json(updatedTask);
 }
 
 export async function deleteTaskHandler(
-  req: Request<{ id: string }>,
+  req: Request<DeleteTaskInput["params"]>,
   res: Response
 ) {
   const { id } = req.params;
