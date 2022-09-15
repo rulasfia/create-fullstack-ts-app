@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const script = require('./scripts.js')
-const runCommand = require('./runner.js').runCommand;
-const cleanUpOnFail = require('./cleanup.js').cleanUpOnFail;
+const script = require("./scripts.js");
+const runCommand = require("./runner.js").runCommand;
+const cleanUpOnFail = require("./cleanup.js").cleanUpOnFail;
 
 const readline = require("readline").createInterface({
   input: process.stdin,
@@ -14,35 +14,35 @@ function initializeProject(dir) {
   console.log(`Initializing fullstack typescript monorepo in ${dir}`);
   const checkedOut = runCommand(script.gitCloneCommand(dir));
   if (!checkedOut) {
-    cleanUpOnFail(dir)
+    cleanUpOnFail(dir);
   }
 
   console.log("Installing dependencies...");
   const depsInstalled = runCommand(script.installDepsCommand(dir));
   if (!depsInstalled) {
-    cleanUpOnFail(dir)
+    cleanUpOnFail(dir);
   }
 
   console.log("Cleaning up...");
   const cleanedUp = runCommand(script.cleanupCommand(dir));
   if (!cleanedUp) {
-    cleanUpOnFail(dir)
+    cleanUpOnFail(dir);
   }
 
   console.log("Initializing git...");
   const gitInitialized = runCommand(script.initGitCommand(dir));
   if (!gitInitialized) {
-    cleanUpOnFail(dir)
+    cleanUpOnFail(dir);
   }
 
   console.log("Running post-install script...");
-  const postInstallScriptFinished = runCommand(script.postInstallCommnad(dir))
+  const postInstallScriptFinished = runCommand(script.postInstallCommnad(dir));
   if (!postInstallScriptFinished) {
-    cleanUpOnFail(dir)
+    cleanUpOnFail(dir);
   }
 
   console.log(`\n🎉 Your project is ready!`);
-  console.log(`➡️ 'cd ${dir}' to get started`);
+  console.log(`➡️ 'cd ${dir}' & run 'npm run dev' to get started`);
 
   return;
 }

@@ -4,8 +4,9 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "dev": "tsx watch --clear-screen=false ./src/main.ts ",
+    "dev": "tsx watch --clear-screen=false ./src/main.ts",
     "build": "tsc",
+    "preview": "tsx --clear-screen=false ./src/main.ts ",
     "start": "node ./dist/main.js"
   },
   "keywords": [],
